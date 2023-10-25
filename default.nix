@@ -42,10 +42,10 @@ let
   ];
   evalConfig = modules: pkgs.lib.evalModules {
     prefix = [];
-    check = true;
     modules = modules ++ baseModules ++ [ pkgsModule ] ++ extraModules;
-    args = {};
   };
+  config._module.args = {};
+  config._module.check = true;
 in
 rec {
   test1 = evalConfig [
