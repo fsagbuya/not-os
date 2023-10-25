@@ -39,8 +39,8 @@ let
       -drive index=1,id=drive1,file=rootdisk.img,format=raw,if=virtio \
       -kernel ${eval.config.system.build.kernel}/bzImage -initrd ${eval.config.system.build.initialRamdisk}/initrd -nographic \
       -append "console=ttyS0 ${toString eval.config.boot.kernelParams} quiet panic=-1" -no-reboot \
-      -net nic,vlan=0,model=virtio \
-      -net user,vlan=0,net=10.0.2.0/24,host=10.0.2.2,dns=10.0.2.3,hostfwd=tcp::2222-:22 \
+      -net nic,model=virtio \
+      -net user,net=10.0.2.0/24,host=10.0.2.2,dns=10.0.2.3,hostfwd=tcp::2222-:22 \
       -device virtio-rng-pci
   '';
 in {
