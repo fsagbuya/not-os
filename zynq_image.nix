@@ -24,7 +24,7 @@ in {
         -serial stdio \
         -display none \
         -dtb $base/zynq-zc702.dtb \
-        -kernel $base/zImage \
+        -kernel ./zynq-files/uImage \
         -initrd $base/initrd \
         -drive file=/tmp/root.squashfs,if=sd,format=raw \
         -append "${cmdline}"
