@@ -102,31 +102,31 @@ in {
   system.build.sd-image = sd-image;
   not-os.sd = true;
   not-os.simpleStaticIp = true;
+  not-os.autoGenerateHostKeys = true;
   system.build.zynq_image = let
     cmdline = "root=/dev/mmcblk0p2 console=ttyPS0,115200n8 systemConfig=${builtins.unsafeDiscardStringContext config.system.build.toplevel}";
     qemuScript = ''
       #!/bin/bash -v
       export PATH=${qemu}/bin:$PATH
-      set -x
-      base=$(dirname $0)
+      BASE=$(realpath $(dirname $0))
 
-      cp $base/root.squashfs /tmp/
-      chmod +w /tmp/root.squashfs
-      truncate -s 64m /tmp/root.squashfs
+      PERSISTENT_DIR="/home/flo/qemu_persistent_dir"
+      mkdir -p "$PERSISTENT_DIR"
+      OVERLAY_IMG="$PERSISTENT_DIR/sd-overlay.qcow2"
 
-      cp $base/sd-image.img /tmp/
-      chmod +w /tmp/sd-image.img
-      truncate -s 512m /tmp/sd-image.img
+      if [ ! -f "$OVERLAY_IMG" ]; then
+        qemu-img create -F raw -f qcow2 -b $BASE/sd-image.img $OVERLAY_IMG 512M
+      fi
 
       qemu-system-arm \
         -M xilinx-zynq-a9 \
         -serial /dev/null \
         -serial stdio \
         -display none \
-        -dtb $base/devicetree.dtb \
-        -kernel $base/uImage \
-        -initrd $base/uramdisk.image.gz \
-        -drive file=/tmp/sd-image.img,if=sd,format=raw \
+        -dtb $BASE/devicetree.dtb \
+        -kernel $BASE/uImage \
+        -initrd $BASE/uramdisk.image.gz \
+        -drive file=$OVERLAY_IMG,if=sd,format=qcow2 \
         -net nic -net nic -net user,hostfwd=tcp::1114-:22 \
         -append "${cmdline}" \
         -monitor telnet::45454,server,nowait

@@ -2,8 +2,10 @@
 
 let
   sshd_config = pkgs.writeText "sshd_config" ''
+    ${lib.optionalString (!config.not-os.autoGenerateHostKeys) ''
     HostKey /etc/ssh/ssh_host_rsa_key
     HostKey /etc/ssh/ssh_host_ed25519_key
+    ''}
     Port 22
     PidFile /run/sshd.pid
     Protocol 2
@@ -14,13 +16,13 @@ let
   compat = pkgs.runCommand "runit-compat" {} ''
     mkdir -p $out/bin/
     cat << EOF > $out/bin/poweroff
-#!/bin/sh
-exec runit-init 0
-EOF
-    cat << EOF > $out/bin/reboot
-#!/bin/sh
-exec runit-init 6
-EOF
+    #!/bin/sh
+    exec runit-init 0
+    EOF
+        cat << EOF > $out/bin/reboot
+    #!/bin/sh
+    exec runit-init 6
+    EOF
     chmod +x $out/bin/{poweroff,reboot}
   '';
 in
@@ -30,6 +32,18 @@ in
     {
       "runit/1".source = pkgs.writeScript "1" ''
         #!${pkgs.runtimeShell}
+        ${lib.optionalString config.not-os.autoGenerateHostKeys ''
+        RSA_KEY="/etc/ssh/ssh_host_rsa_key"
+        ED25519_KEY="/etc/ssh/ssh_host_ed25519_key"
+
+        if [ ! -f $RSA_KEY ]; then
+          ${pkgs.openssh}/bin/ssh-keygen -t rsa -b 2048 -f $RSA_KEY -N ""
+        fi
+        if [ ! -f $ED25519_KEY ]; then
+          ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -f $ED25519_KEY -N ""
+        fi
+        ''}
+
         ${lib.optionalString config.not-os.simpleStaticIp ''
         ip addr add 10.0.2.15 dev eth0
         ip link set eth0 up
