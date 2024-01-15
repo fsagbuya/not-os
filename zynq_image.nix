@@ -102,7 +102,6 @@ in {
   system.build.sd-image = sd-image;
   not-os.sd = true;
   not-os.simpleStaticIp = true;
-  not-os.autoGenerateHostKeys = true;
   system.build.zynq_image = let
     cmdline = "root=/dev/mmcblk0p2 console=ttyPS0,115200n8 systemConfig=${builtins.unsafeDiscardStringContext config.system.build.toplevel}";
     qemuScript = ''
