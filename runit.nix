@@ -7,8 +7,8 @@ let
     Port 22
     PidFile /run/sshd.pid
     Protocol 2
-    PermitRootLogin yes
-    PasswordAuthentication yes
+    PermitRootLogin prohibit-password
+    PasswordAuthentication no
     AuthorizedKeysFile /etc/ssh/authorized_keys.d/%u
   '';
   compat = pkgs.runCommand "runit-compat" {} ''
@@ -34,7 +34,7 @@ in
         ip addr add 10.0.2.15 dev eth0
         ip link set eth0 up
         ip route add 10.0.2.0/24 dev eth0
-        ip  route add default via 10.0.2.2 dev eth0
+        ip route add default via 10.0.2.2 dev eth0
         ''}
         mkdir /bin/
         ln -s ${pkgs.runtimeShell} /bin/sh
