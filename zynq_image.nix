@@ -1,5 +1,6 @@
-{ config, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 
+with lib;
 let
   # dont use overlays for the qemu, it causes a lot of wasted time on recompiles
   x86pkgs = import pkgs.path { system = "x86_64-linux"; };
@@ -88,14 +89,29 @@ let
 in {
   imports = [ ./arm32-cross-fixes.nix ];
   boot.kernelPackages = customKernelPackages;
-  boot.postBootCommands = ''
-    rootPart=$(${x86pkgs.utillinux}/bin/findmnt -n -o SOURCE /)
-    bootDevice=$(lsblk -npo PKNAME $rootPart)
-    partNum=$(lsblk -npo MAJ:MIN $rootPart | ${x86pkgs.gawk}/bin/awk -F: '{print $2}')
+  boot.postBootCommands = lib.mkIf config.not-os.sd ''
 
-    echo ",+," | sfdisk -N$partNum --no-reread $bootDevice
-    ${x86pkgs.parted}/bin/partprobe
-    ${x86pkgs.e2fsprogs}/bin/resize2fs $rootPart
+    if [ -f /nix-path-registration ]; then
+      set -x
+      set -euo pipefail
+
+      rootPart=$(${pkgs.utillinux}/bin/findmnt -n -o SOURCE /)
+      bootDevice=$(lsblk -npo PKNAME $rootPart)
+      partNum=$(lsblk -npo MAJ:MIN $rootPart | ${pkgs.gawk}/bin/awk -F: '{print $2}')
+
+      echo ",+," | sfdisk -N$partNum --no-reread $bootDevice
+      ${pkgs.parted}/bin/partprobe
+      ${pkgs.e2fsprogs}/bin/resize2fs $rootPart
+ 
+      nix-store --load-db < /nix-path-registration
+
+      touch /etc/NIXOS
+      nix-env -p /nix/var/nix/profiles/system --set /run/current-system
+
+      rm -f /nix-path-registration
+    fi
+
+
   '';
   nixpkgs.system = "armv7l-linux";
   networking.hostName = "zynq";
@@ -105,7 +121,7 @@ in {
   system.build.zynq_image = let
     cmdline = "root=/dev/mmcblk0p2 console=ttyPS0,115200n8 systemConfig=${builtins.unsafeDiscardStringContext config.system.build.toplevel}";
     qemuScript = ''
-      #!/bin/bash -v
+      #!/bin/bash
       export PATH=${qemu}/bin:$PATH
       BASE=$(realpath $(dirname $0))
 
@@ -127,8 +143,8 @@ in {
         -initrd $BASE/uramdisk.image.gz \
         -drive file=$OVERLAY_IMG,if=sd,format=qcow2 \
         -net nic -net nic -net user,hostfwd=tcp::1114-:22 \
-        -append "${cmdline}" \
-        -monitor telnet::45454,server,nowait
+        -append "${cmdline}"
+
     '';
   in pkgs.runCommand "zynq_image" {
     inherit qemuScript;
@@ -149,7 +165,7 @@ in {
     ls -ltrh
   '';
   environment = {
-    systemPackages = with pkgs; [ pkgs.strace pkgs.inetutils ];
+    systemPackages = with pkgs; [ inetutils wget ];
     etc = {
       "service/getty/run".source = pkgs.writeShellScript "getty" ''
         hostname ${config.networking.hostName}
