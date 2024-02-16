@@ -1,0 +1,31 @@
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 480269fa60..64b20e4200 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -339,6 +339,7 @@ dtb-$(CONFIG_ARCH_ZYNQ) += \
+ 	zynq-cse-nor.dtb \
+ 	zynq-cse-qspi-single.dtb \
+ 	zynq-dlc20-rev1.0.dtb \
++	zynq-fast-servo.dtb \
+ 	zynq-microzed.dtb \
+ 	zynq-minized.dtb \
+ 	zynq-picozed.dtb \
+diff --git a/configs/xilinx_zynq_virt_defconfig b/configs/xilinx_zynq_virt_defconfig
+index 474abc7f6b..6e6bbd4aab 100644
+--- a/configs/xilinx_zynq_virt_defconfig
++++ b/configs/xilinx_zynq_virt_defconfig
+@@ -80,6 +80,7 @@ CONFIG_CMD_MTDPARTS_SPREAD=y
+ CONFIG_CMD_MTDPARTS_SHOW_NET_SIZES=y
+ CONFIG_CMD_UBI=y
+ CONFIG_OF_BOARD=y
++CONFIG_SYS_CONFIG_NAME="zynq-fast-servo"
+ CONFIG_OF_LIST="zynq-zc702 zynq-zc706 zynq-zc770-xm010 zynq-zc770-xm011 zynq-zc770-xm011-x16 zynq-zc770-xm012 zynq-zc770-xm013 zynq-cc108 zynq-microzed zynq-minized zynq-picozed zynq-zed zynq-zturn zynq-zturn-v5 zynq-zybo zynq-zybo-z7 zynq-dlc20-rev1.0"
+ CONFIG_ENV_IS_NOWHERE=y
+ CONFIG_ENV_IS_IN_FAT=y
+diff --git a/include/configs/zynq-fast-servo.h b/include/configs/zynq-fast-servo.h
+new file mode 100644
+index 0000000000..0aa486a2b7
+--- /dev/null
++++ b/include/configs/zynq-fast-servo.h
+@@ -0,0 +1 @@
++#include <configs/zynq-common.h>
