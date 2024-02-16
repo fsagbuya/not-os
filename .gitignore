@@ -1,3 +1,6 @@
 result
 rootdisk.img
-*.patch
+network.patch
+pr-28.patch
+pr-29.patch
+pr-30.patch
