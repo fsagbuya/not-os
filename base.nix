@@ -99,7 +99,10 @@ with lib;
         EOF
       '';
       bashrc.text = "export PATH=/run/current-system/sw/bin";
-      profile.text = "export PATH=/run/current-system/sw/bin";
+      profile.text = ''
+        export PATH=/run/current-system/sw/bin
+        export EDITOR=nano
+      '';
       "resolv.conf".text = "nameserver 10.0.2.3";
       passwd.text = ''
         root:x:0:0:System administrator:/root:/run/current-system/sw/bin/bash

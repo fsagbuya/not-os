@@ -68,7 +68,7 @@ in {
   not-os.sd = true;
   not-os.simpleStaticIp = true;
   environment = {
-    systemPackages = with pkgs; [ inetutils wget ];
+    systemPackages = with pkgs; [ inetutils wget nano ];
     etc = {
       "service/getty/run".source = pkgs.writeShellScript "getty" ''
         hostname ${config.networking.hostName}
